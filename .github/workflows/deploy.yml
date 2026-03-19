@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Récupérer le code du dépôt
-        uses: actions/checkout@v4 # Version 4 pour Node.js récent
+        uses: actions/checkout@v4
 
       - name: Configurer les identifiants AWS
-        uses: aws-actions/configure-aws-credentials@v4 # Version 4 pour Node.js récent
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -22,5 +22,4 @@ jobs:
 
       - name: Envoyer les fichiers vers S3
         run: |
-          # REMPLACE BIEN 'ton-bucket-s3-ici' par le vrai nom de ton bucket S3 !
-          aws s3 sync . s3://ton-bucket-s3-ici --delete --exclude ".git*" --exclude ".github*"
+          aws s3 sync . s3://delphine-portfolio-aws-2026 --delete --exclude ".git*" --exclude ".github*"
