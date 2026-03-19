@@ -3,24 +3,24 @@ name: Déploiement Automatique Portfolio AWS
 on:
   push:
     branches:
-      - main  # Le déploiement se lance quand tu "push" sur la branche main
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Récupérer le code du dépôt
-      uses: actions/checkout@v3
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@v4 # Version 4 pour Node.js récent
 
-    - name: Configurer les identifiants AWS
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-3
+      - name: Configurer les identifiants AWS
+        uses: aws-actions/configure-aws-credentials@v4 # Version 4 pour Node.js récent
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-3
 
-    - name: Envoyer les fichiers vers S3
-      run: |
-        # Remplace bien NOM-DE-TON-BUCKET par le vrai nom de ton bucket S3
-        aws s3 sync . s3://NOM-DE-TON-BUCKET --delete --exclude ".git*" --exclude ".github*"
+      - name: Envoyer les fichiers vers S3
+        run: |
+          # REMPLACE BIEN 'ton-bucket-s3-ici' par le vrai nom de ton bucket S3 !
+          aws s3 sync . s3://ton-bucket-s3-ici --delete --exclude ".git*" --exclude ".github*"
