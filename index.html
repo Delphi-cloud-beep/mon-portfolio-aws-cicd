@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -61,22 +62,22 @@
                 </div>
                 <div class="contact-form-wrap">
                     <div class="form-block w-form">
-                        <form id="email-form" action="https://vbimtxdx0b.execute-api.eu-west-3.amazonaws.com/contact" method="post" class="contact-form">
+                        <form id="email-form" class="contact-form">
                             <div class="w-layout-grid contact-form-grid">
                                 <div>
                                     <label for="name">NOM</label>
-                                    <input class="text-field w-input" name="name" placeholder="Entre ton nom" type="text" id="name"/>
+                                    <input class="text-field w-input" name="name" placeholder="Entre ton nom" type="text" id="name" autocomplete="name" required/>
                                 </div>
                                 <div>
                                     <label for="email">ADRESSE EMAIL</label>
-                                    <input class="text-field w-input" name="email" placeholder="Entre ton email" type="email" id="email" required=""/>
+                                    <input class="text-field w-input" name="email" placeholder="Entre ton email" type="email" id="email" autocomplete="email" required/>
                                 </div>
                                 <div>
                                     <label for="message">MESSAGE</label>
-                                    <textarea id="message" name="message" placeholder="Entre ton message" class="text-field cc-textarea w-input"></textarea>
+                                    <textarea id="message" name="message" placeholder="Entre ton message" class="text-field cc-textarea w-input" required></textarea>
                                 </div>
                             </div>
-                            <input type="submit" value="Déclenche une fonction AWS Lambda via API Gateway" class="primary-button w-button"/>
+                            <input type="submit" id="submit-btn" value="Déclenche une fonction AWS Lambda" class="primary-button w-button"/>
                         </form>
                     </div>
                 </div>
@@ -94,5 +95,54 @@
         </div>
         <div class="paragraph-tiny">© 2026 - Déployé via CI/CD sur AWS</div>
     </div>
+
+    <script>
+    // ⚠️ IMPORTANT : Remplace cette URL par ton Invoke URL de l'API Gateway si elle est différente
+   
+    window.LAMBDA_URL = "https://kiiufiibfa7iktqt657dcfqhji0jrbep.lambda-url.eu-west-3.on.aws";
+    
+    const contactForm = document.getElementById('email-form');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (contactForm && submitBtn) {
+        console.log("✅ Système prêt.");
+        
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            
+            const originalBtnValue = submitBtn.value;
+            submitBtn.value = "Envoi en cours...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(contactForm);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                message: formData.get('message')
+            };
+
+            try {
+                const response = await fetch(window.LAMBDA_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+    window.location.href = "success.html"; // Redirige vers ta page de succès
+} else {
+                    alert("Erreur serveur.");
+                }
+            } catch (err) {
+                console.error("❌ Erreur :", err);
+                alert("Erreur de connexion.");
+            } finally {
+                submitBtn.value = originalBtnValue;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+    </script>
 </body>
 </html>
