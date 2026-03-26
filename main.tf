@@ -109,8 +109,8 @@ resource "aws_lambda_function_url" "contact_lambda_url" {
   authorization_type = "NONE"
 
   cors {
-    allow_origins     = ["*"] # Autorise temporairement l'adresse cloudfront.net
-    allow_methods     = ["POST", "OPTIONS"] # Méthodes nécessaires pour le formulaire
+    allow_origins     = ["*"] 
+    allow_methods     = ["POST", "OPTIONS"] 
     allow_headers     = ["content-type"]
     max_age           = 86400
   }
@@ -167,7 +167,7 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
   enabled             = true
   default_root_object = "index.html"
   
-  # Toujours commenté pour éviter le conflit DNS actuel[cite: 4]
+  # Toujours commenté pour éviter le conflit DNS actuel
   # aliases             = ["www.delphine.cloud"] 
 
   default_cache_behavior {
@@ -187,11 +187,11 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true[cite: 4]
+    cloudfront_default_certificate = true
     
-    # acm_certificate_arn      = aws_acm_certificate.frontend_cert.arn[cite: 4]
-    # ssl_support_method       = "sni-only"[cite: 4]
-    # minimum_protocol_version = "TLSv1.2_2021"[cite: 4]
+    # acm_certificate_arn      = aws_acm_certificate.frontend_cert.arn
+    # ssl_support_method       = "sni-only"
+    # minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 
@@ -200,9 +200,9 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
 # ==========================================
 
 output "form_action_url" {
-  value = aws_lambda_function_url.contact_lambda_url.function_url[cite: 4]
+  value = aws_lambda_function_url.contact_lambda_url.function_url
 }
 
 output "cloudfront_domain" {
-  value = aws_cloudfront_distribution.frontend_cdn.domain_name[cite: 4]
+  value = aws_cloudfront_distribution.frontend_cdn.domain_name
 }
