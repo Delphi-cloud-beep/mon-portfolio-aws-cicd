@@ -110,7 +110,8 @@ resource "aws_lambda_function_url" "contact_lambda_url" {
 
   cors {
     allow_origins     = ["*"] 
-    allow_methods     = ["POST", "OPTIONS"] 
+    # Correction : Utilisation du wildcard pour éviter les erreurs de validation strictes
+    allow_methods     = ["*"] 
     allow_headers     = ["content-type"]
     max_age           = 86400
   }
