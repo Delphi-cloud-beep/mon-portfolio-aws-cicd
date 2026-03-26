@@ -105,7 +105,6 @@ resource "aws_lambda_function_url" "contact_lambda_url" {
   cors {
     allow_origins     = ["*"]
     allow_methods     = ["*"]
-    # CORRECTION CRUCIALE : On autorise tous les headers pour éviter le 403
     allow_headers     = ["*"]
     expose_headers    = ["*"]
     max_age           = 86400
@@ -113,11 +112,12 @@ resource "aws_lambda_function_url" "contact_lambda_url" {
 }
 
 resource "aws_lambda_permission" "allow_public_url" {
-  statement_id           = "AllowPublicAccess"
+  # CORRECTION : On change l'ID pour forcer AWS à accepter la nouvelle règle
+  statement_id           = "AllowPublicAccessV3" 
   action                 = "lambda:InvokeFunctionUrl"
   function_name          = aws_lambda_function.contact_handler.function_name
   principal              = "*"
-  function_url_auth_type = "NONE"
+  function_url_auth_type = "NONE" # Indispensable pour le mode public
 }
 
 # ==========================================
