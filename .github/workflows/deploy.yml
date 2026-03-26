@@ -20,6 +20,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-3
 
+      # ÉTAPE TERRAFORM : On s'assure que l'infra est à jour
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Terraform Init & Apply
+        run: |
+          terraform init
+          terraform apply -auto-approve
+
+      # ÉTAPE FRONTEND : On envoie les fichiers sur le bucket créé par Terraform
       - name: Envoyer les fichiers vers S3
         run: |
-          aws s3 sync . s3://delphine-portfolio-aws-2026 --delete --exclude ".git*" --exclude ".github*"
+          aws s3 sync . s3://mon-portfolio-frontend-2026 --delete --exclude ".git*" --exclude ".github*" --exclude "*.tf*" --exclude "terraform.exe"
+
+      # ÉTAPE OPTIONNELLE : Invalider le cache CloudFront pour voir les changements direct
+      - name: Invalidation CloudFront
+        run: |
+          aws cloudfront create-invalidation --distribution-id E15WXZOO1HWP4 --paths "/*"
