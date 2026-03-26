@@ -109,8 +109,7 @@ resource "aws_lambda_function_url" "contact_lambda_url" {
   authorization_type = "NONE"
 
   cors {
-    # On autorise spécifiquement tes domaines
-    allow_origins     = ["https://www.delphine.cloud", "https://delphine.cloud"]
+    allow_origins     = ["*"] # Elargi temporairement pour le test
     allow_methods     = ["*"]
     allow_headers     = ["content-type"]
     max_age           = 86400
@@ -167,7 +166,9 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
 
   enabled             = true
   default_root_object = "index.html"
-  aliases             = ["www.delphine.cloud"]
+  
+  # On commente l'alias pour éviter le conflit CNAME d'OVH
+  # aliases             = ["www.delphine.cloud"] 
 
   default_cache_behavior {
     target_origin_id       = "S3-Frontend"
@@ -186,9 +187,13 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.frontend_cert.arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
+    # On utilise le certificat par défaut temporairement[cite: 2]
+    cloudfront_default_certificate = true
+    
+    # On commente les lignes du certificat personnalisé[cite: 2]
+    # acm_certificate_arn      = aws_acm_certificate.frontend_cert.arn
+    # ssl_support_method       = "sni-only"
+    # minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 
