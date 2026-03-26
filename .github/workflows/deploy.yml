@@ -27,16 +27,20 @@ jobs:
           terraform_version: "1.5.0"
 
       - name: Terraform Init & Apply
+        id: terraform_apply # On ajoute un ID ici pour récupérer les résultats
         run: |
           terraform init
           terraform apply -auto-approve
 
-      # ÉTAPE FRONTEND : On envoie les fichiers sur le bucket créé par Terraform
+      # ÉTAPE FRONTEND : On envoie les fichiers sur le bucket
       - name: Envoyer les fichiers vers S3
         run: |
           aws s3 sync . s3://mon-portfolio-frontend-2026 --delete --exclude ".git*" --exclude ".github*" --exclude "*.tf*" --exclude "terraform.exe"
 
-      # ÉTAPE OPTIONNELLE : Invalider le cache CloudFront pour voir les changements direct
+      # ÉTAPE CORRIGÉE : On récupère l'ID dynamiquement via Terraform
       - name: Invalidation CloudFront
         run: |
-          aws cloudfront create-invalidation --distribution-id E15WXZOO1HWP4 --paths "/*"
+          # On récupère le domaine depuis l'output de Terraform
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='mon-portfolio-frontend-2026.s3.eu-west-3.amazonaws.com'].Id" --output text)
+          echo "Nouvelle distribution ID trouvée : $DISTRIBUTION_ID"
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
