@@ -1,5 +1,5 @@
 # ==========================================
-# CONFIGURATION DES PROVIDERS (INDISPENSABLE)
+# CONFIGURATION DES PROVIDERS
 # ==========================================
 
 terraform {
@@ -11,19 +11,17 @@ terraform {
   }
 }
 
-# Provider par défaut pour la France (Paris)
 provider "aws" {
   region = "eu-west-3"
 }
 
-# Provider spécifique pour le certificat SSL (Obligatoire en us-east-1 pour CloudFront)
 provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
 }
 
 # ==========================================
-# 1. ACM & DNS (Certificat SSL)
+# 1. ACM (Certificat SSL)
 # ==========================================
 
 resource "aws_acm_certificate" "frontend_cert" {
@@ -37,7 +35,7 @@ resource "aws_acm_certificate" "frontend_cert" {
 }
 
 # ==========================================
-# 2. DYNAMODB (Stockage des messages)
+# 2. DYNAMODB
 # ==========================================
 
 resource "aws_dynamodb_table" "contact_messages" {
@@ -52,7 +50,7 @@ resource "aws_dynamodb_table" "contact_messages" {
 }
 
 # ==========================================
-# 3. IAM (Sécurité et Permissions)
+# 3. IAM & LAMBDA
 # ==========================================
 
 resource "aws_iam_role" "lambda_role" {
@@ -85,10 +83,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# ==========================================
-# 4. LAMBDA (Traitement du formulaire)
-# ==========================================
-
 resource "aws_lambda_function" "contact_handler" {
   filename         = "lambda_function.zip"
   function_name    = "PortfolioContactHandler"
@@ -109,10 +103,10 @@ resource "aws_lambda_function_url" "contact_lambda_url" {
   authorization_type = "NONE"
 
   cors {
-    allow_origins     = ["*"] 
-    # Correction : Utilisation du wildcard pour éviter les erreurs de validation strictes
-    allow_methods     = ["*"] 
-    allow_headers     = ["content-type"]
+    allow_origins     = ["*"]
+    allow_methods     = ["POST", "OPTIONS"]
+    # Correction CORS : on ajoute les headers pour éviter le 403
+    allow_headers     = ["content-type", "x-amz-target", "x-amz-date", "authorization"]
     max_age           = 86400
   }
 }
@@ -126,7 +120,7 @@ resource "aws_lambda_permission" "allow_public_url" {
 }
 
 # ==========================================
-# 5. S3 & CLOUDFRONT (Hébergement Web)
+# 4. S3 & CLOUDFRONT (Web Hosting)
 # ==========================================
 
 resource "aws_s3_bucket" "frontend_bucket" {
@@ -168,8 +162,8 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
   enabled             = true
   default_root_object = "index.html"
   
-  # Toujours commenté pour éviter le conflit DNS actuel
-  # aliases             = ["www.delphine.cloud"] 
+  # ACTIVATION DU DOMAINE
+  aliases = ["www.delphine.cloud"]
 
   default_cache_behavior {
     target_origin_id       = "S3-Frontend"
@@ -188,16 +182,15 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
-    
-    # acm_certificate_arn      = aws_acm_certificate.frontend_cert.arn
-    # ssl_support_method       = "sni-only"
-    # minimum_protocol_version = "TLSv1.2_2021"
+    # UTILISATION DU CERTIFICAT ACM
+    acm_certificate_arn      = aws_acm_certificate.frontend_cert.arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 
 # ==========================================
-# 6. OUTPUTS (Résultats du déploiement)
+# 5. OUTPUTS
 # ==========================================
 
 output "form_action_url" {
