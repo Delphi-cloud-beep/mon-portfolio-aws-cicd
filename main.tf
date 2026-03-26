@@ -104,8 +104,8 @@ resource "aws_lambda_function_url" "contact_lambda_url" {
 
   cors {
     allow_origins     = ["*"]
-    allow_methods     = ["POST", "OPTIONS"]
-    # Correction CORS : on ajoute les headers pour éviter le 403
+    # Correction ICI : Utilisation de "*" pour satisfaire les contraintes de validation AWS
+    allow_methods     = ["*"]
     allow_headers     = ["content-type", "x-amz-target", "x-amz-date", "authorization"]
     max_age           = 86400
   }
@@ -182,7 +182,7 @@ resource "aws_cloudfront_distribution" "frontend_cdn" {
   }
 
   viewer_certificate {
-    # UTILISATION DU CERTIFICAT ACM
+    # UTILISATION DU CERTIFICAT ACM[cite: 5]
     acm_certificate_arn      = aws_acm_certificate.frontend_cert.arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
