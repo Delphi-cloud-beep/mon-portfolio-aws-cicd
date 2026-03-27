@@ -97,15 +97,13 @@
     </div>
 
    <script>
-    // Ajoute cette ligne pour définir l'URL de ton API
+    // Utilise l'URL exacte sans slash final pour éviter les problèmes de routage
     window.LAMBDA_URL = "https://5veldenzv3a6czg4iemrdp24wm0kehwe.lambda-url.eu-west-3.on.aws";
 
     const contactForm = document.getElementById('email-form');
     const submitBtn = document.getElementById('submit-btn');
 
     if (contactForm && submitBtn) {
-        console.log("✅ Système prêt.");
-        
         contactForm.addEventListener('submit', async (e) => {
             e.preventDefault(); 
             
@@ -121,29 +119,30 @@
             };
 
             try {
-                // Le fetch va maintenant utiliser l'URL que nous venons de définir au-dessus
                 const response = await fetch(window.LAMBDA_URL, {
                     method: 'POST',
-                    mode: 'cors',
+                    mode: 'cors', // Indispensable pour AWS Lambda URL
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
 
                 if (response.ok) {
-                    alert("Message envoyé avec succès !");
-                    contactForm.reset();
+                    // Redirection vers ta page de succès toute neuve !
+                    window.location.href = "success.html"; 
                 } else {
-                    alert("Erreur serveur lors de l'envoi.");
+                    const errorData = await response.json();
+                    console.error("Détails erreur :", errorData);
+                    alert("Le serveur a refusé le message. Vérifie les logs Lambda.");
                 }
             } catch (err) {
-                console.error("❌ Erreur :", err);
-                alert("Erreur de connexion au service.");
+                console.error("❌ Erreur connexion :", err);
+                alert("Impossible de joindre AWS. Vérifie ta connexion ou le CORS.");
             } finally {
                 submitBtn.value = originalBtnValue;
                 submitBtn.disabled = false;
             }
         });
     }
-    </script>
+</script>
 </body>
 </html>
